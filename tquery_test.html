@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="vendor/tquery/tquery-bundle.js"></script>
+    <script src="vendor/physijs/physi.js"></script>
+    <script src="vendor/tquery/tquery.physijs.js"></script>
+    <script src='vendor/tquery/tquery.light.shadow.js'></script>
+</head>
+<body>
+<script>
+    var world = tQuery.createWorld().boilerplate({cameraControls: false}).start();
+
+    //position the camera
+    world.tCamera().position.set(0, 100, 230);
+    world.tCamera().lookAt(world.tScene().position);
+
+    //enable shadows
+    world.tRenderer().shadowMapEnabled = true;
+    world.tRenderer().shadowMapSoft = true;
+    world.tRenderer().setClearColorHex(0xffffff, 1);
+
+    world.enablePhysics();
+
+    //let there be light
+    tQuery.createDirectionalLight().addTo(world)
+            .position(20, 40, -15).color(0xffffff)
+            .castShadow(true).shadowMap(512 * 2, 512 * 2)
+            .shadowCamera(60, -60, 60, -60, 20, 200)
+            .shadowDarkness(0.7).shadowBias(0.002);
+
+    //load tile texture and repeat
+    var texture = THREE.ImageUtils.loadTexture("tiles.jpg");
+    texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+    texture.repeat.set(1, 1);
+
+    var ground1 = tQuery.createCube(100, 1, 100).addTo(world)
+            .position(0, -10, 0).rotation(0.2, 0, 0.4)
+            .setLambertMaterial().map(texture).back()
+            .receiveShadow(true);
+
+
+    var ground2 = tQuery.createCube(100, 1, 100).addTo(world)
+            .position(-92, -10, 0).rotation(0.2, 0, -0.4)
+            .setLambertMaterial().map(texture).back()
+            .receiveShadow(true);
+
+    ground2.enablePhysics({
+        mass: 0,
+        friction: 0.1,
+        restitution: 0.4
+    });
+
+    ground1.enablePhysics({
+        mass:0,
+        friction: 0.1,
+        restitution: 0.4
+    });
+
+
+    var spawnObj = function () {
+        var object = tQuery.createSphere(5, 100, 100).addTo(world)
+                .position( (Math.random() * 170) - 90, 100, (Math.random() * 50) - 10)
+                .setLambertMaterial(new THREE.MeshLambertMaterial(
+                {
+                    color: Math.floor(Math.random()*16777215)
+                })).back().castShadow(true);
+
+        object.enablePhysics({
+           // tGeometry	: new THREE.SphereGeometry(),
+            friction: 0.2,
+            restitution: 2,
+            mass: 0.8
+        });
+    };
+    //spawnObj()
+    setInterval(spawnObj, 1000);
+
+</script>
+</body>
+</html>
